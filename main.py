@@ -1,16 +1,21 @@
-# This is a sample Python script.
+import datetime
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import requests
+import json
 
+start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
+posts_before_ts = int(start_time.timestamp())
+all_posts = []
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+while True:
+    url = f'https://api.pushshift.io/reddit/search/submission/' \
+          f'?subreddit=animecalendar&sort=desc&sort_type=created_utc&before={posts_before_ts}&size=100'
 
+    response = requests.get(url)
+    posts = json.loads(response.text)
+    if len(posts['data']) == 0:
+        break
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    all_posts += posts['data']
+    posts_before_ts = posts['data'][-1]['created_utc']
+print(len(all_posts))
