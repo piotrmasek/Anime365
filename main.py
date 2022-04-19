@@ -22,10 +22,19 @@ while True:
 
 print(len(all_posts))
 path = 'img/'
-os.mkdir(path)
+
+try:
+    os.mkdir(path)
+except FileExistsError:
+    print('img/ already exists')
+
 for post in all_posts:
+    url: str = post['url']
+    if 'v.redd.it' in url:
+        continue
+    ext = url[url.rfind(".")::]
     img = requests.get(post['url'])
     title = post['title']
-    file = open(path + f'{title}.jpg', 'wb')  # other extensions
+    file = open(path + f'{title + ext}', 'wb')  # other extensions
     file.write(img.content)
 
