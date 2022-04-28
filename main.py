@@ -4,6 +4,10 @@ import requests
 import json
 import os
 
+import image_handling
+
+from image import Image
+
 start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
 posts_before_ts = int(start_time.timestamp())
 all_posts = []
@@ -20,21 +24,29 @@ while True:
     posts_before_ts = posts['data'][-1]['created_utc']
     break
 
-print(len(all_posts))
-path = 'img/'
+image_store_dir = 'img/'
 
 try:
-    os.mkdir(path)
+    os.mkdir(image_store_dir)
 except FileExistsError:
     print('img/ already exists')
+
+images = []
+
 
 for post in all_posts:
     url: str = post['url']
     if 'v.redd.it' in url:
         continue
     ext = url[url.rfind(".")::]
-    img = requests.get(post['url'])
+
     title = post['title']
-    file = open(path + f'{title + ext}', 'wb')  # other extensions
-    file.write(img.content)
+    name_with_ext = f'{title + ext}'
+    image_handling.save_image(image_store_dir, title, url)
+
+    obj = Image(post['id'], name_with_ext, datetime.datetime.now().timestamp(), "ONE PIS", 10)
+    images.append(obj)
+
+print(*images, sep='\n')
+
 
