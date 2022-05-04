@@ -1,6 +1,6 @@
 import datetime
 
-from types.image import Image
+from classes.image import Image
 from util import image_handling
 from util import api_handler
 
