@@ -15,18 +15,28 @@
 
 #
 #
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+import os
+
+import requests
 
 
-class Image(declarative_base()):
-    __tablename__ = 'images'
-    id = Column(Integer, primary_key=True)
-    file_name = Column(String(128), nullable=False)
-    timestamp = Column(Integer, nullable=False, index=True)
-    anime = Column(String(256))
-    difficulty = Column(Integer)
+def save_image(name_with_extension: str, url: str):
+    image_store_dir = 'img/'
+    try:
+        os.mkdir(image_store_dir)
+    except FileExistsError:
+        pass
+    file_path = image_store_dir + name_with_extension
+    if os.path.exists(file_path):
+        print(f"File exists: {file_path}. Skipping.")
+        return
 
-    def __str__(self) -> str:
-        return f"id: {self.id}, file: {self.file_name}, date: {self.timestamp}, anime: {self.anime}," \
-               f" diff: {self.difficulty}"
+    print(f'Downloading {name_with_extension}...')
+    img = requests.get(url)
+
+    try:
+        file = open(file_path, 'wb')  # other extensions
+    except OSError:
+        print(f"Can't create file: {file_path}. Skipping.")
+        return
+    file.write(img.content)
