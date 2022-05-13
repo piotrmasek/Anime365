@@ -22,7 +22,7 @@ import requests
 
 
 def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
-    all_posts = []
+    fetched_posts = []
     current_max_timestamp = to_timestamp
     while current_max_timestamp >= from_timestamp:
         request_url = f'https://api.pushshift.io/reddit/search/submission/' \
@@ -41,10 +41,10 @@ def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
         posts = json.loads(response.text)
         if len(posts['data']) == 0:
             break
-        all_posts += posts['data']
-        print(f"Added {len(posts['data'])} Total {len(all_posts)}")
+        fetched_posts += posts['data']
+        print(f"Added {len(posts['data'])} Total {len(fetched_posts)}")
         current_max_timestamp = posts['data'][-1]['created_utc']
         if current_max_timestamp < from_timestamp:
             break
         print(f'posts before: {datetime.datetime.fromtimestamp(current_max_timestamp)}')
-    return all_posts
+    return fetched_posts

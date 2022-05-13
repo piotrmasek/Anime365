@@ -17,38 +17,49 @@
 #
 import datetime
 
+import sqlalchemy as db
+import sqlalchemy.orm
+
 from classes.image import Image
 from util import api_handler
 from util import image_file_handling
 
-start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
-end_time = datetime.datetime(2020, 12, 31, 0, 0, 0, 0)
 
-all_posts = api_handler.get_posts(int(start_time.timestamp()), int(end_time.timestamp()))
-
-images = []
-
-
-def is_post_valid(post):
-    extension = post['url'][post['url'].rfind(".")::]
+def is_post_valid(post_to_validate) -> bool:
+    url: str = post_to_validate['url']
+    extension = url[url.rfind(".")::]
     allowed_extensions = ['.jpg', '.jpeg', '.png']
+
+    if 'v.redd.it' in url:
+        return False
     if extension not in allowed_extensions:
         return False
     return True
 
 
-for post in all_posts:
-    url: str = post['url']
-    timestamp: int = post['created_utc']
-    if 'v.redd.it' in url:
+def save_post(post_to_save, db_session):
+    url: str = post_to_save['url']
+    timestamp: int = post_to_save['created_utc']
+    extension = url[url.rfind(".")::]
+    name_with_extension = f'{str(timestamp) + extension}'
+    image_file_handling.save_image(name_with_extension, url)
+    img = Image(file_name=name_with_extension, timestamp=timestamp, anime='test')
+    db_session.add(img)
+
+
+start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
+end_time = datetime.datetime(2021, 11, 1, 0, 0, 0, 0)
+
+fetched_posts = api_handler.get_posts(int(start_time.timestamp()), int(end_time.timestamp()))
+
+engine = db.create_engine('sqlite:///anime365.sqlite')
+session_maker = db.orm.sessionmaker()
+session_maker.configure(bind=engine)
+Image.metadata.create_all(engine)
+session = session_maker()
+
+for post in fetched_posts:
+    if not is_post_valid(post):
         continue
-    ext = url[url.rfind(".")::]
-    name_with_ext = f'{str(timestamp) + ext}'
-
-    if is_post_valid(post):
-        image_file_handling.save_image(name_with_ext, url)
-        obj = Image(file_name=name_with_ext, timestamp=timestamp, anime='test')
-        images.append(obj)
-        # TODO: save to db
-
-print(*images, sep='\n')
+    save_post(post, session)
+session.commit()
