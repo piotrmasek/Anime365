@@ -37,14 +37,22 @@ def is_post_valid(post_to_validate) -> bool:
     return True
 
 
-def save_post(post_to_save, db_session):
+def is_image_in_db(db_session: db.orm.session, image: Image):
+    return db_session.query(Image).filter(Image.timestamp == image.timestamp).count() > 0
+
+
+def save_post(post_to_save, db_session: db.orm.session):
     url: str = post_to_save['url']
     timestamp: int = post_to_save['created_utc']
     extension = url[url.rfind(".")::]
     name_with_extension = f'{str(timestamp) + extension}'
-    image_file_handling.save_image(name_with_extension, url)
     img = Image(file_name=name_with_extension, timestamp=timestamp, anime='test')
-    db_session.add(img)
+
+    if not is_image_in_db(db_session, img):
+        image_file_handling.save_image(name_with_extension, url)
+        db_session.add(img)
+    else:
+        print(f"Skipping existing image: {img}")
 
 
 start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
