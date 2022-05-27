@@ -15,6 +15,10 @@
 
 #
 #
+#
+#
+#
+#
 import datetime
 
 import sqlalchemy as db
@@ -46,7 +50,8 @@ def save_post(post_to_save, db_session: db.orm.session):
     timestamp: int = post_to_save['created_utc']
     extension = url[url.rfind(".")::]
     name_with_extension = f'{str(timestamp) + extension}'
-    img = Image(file_name=name_with_extension, timestamp=timestamp, anime='test')
+    anime_title = api_handler.get_anime_name(post_to_save)
+    img = Image(file_name=name_with_extension, timestamp=timestamp, anime=anime_title)
 
     if not is_image_in_db(db_session, img):
         image_file_handling.save_image(name_with_extension, url)
@@ -56,7 +61,7 @@ def save_post(post_to_save, db_session: db.orm.session):
 
 
 start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
-end_time = datetime.datetime(2021, 11, 1, 0, 0, 0, 0)
+end_time = datetime.datetime(2021, 12, 14, 0, 0, 0, 0)
 
 fetched_posts = api_handler.get_posts(int(start_time.timestamp()), int(end_time.timestamp()))
 

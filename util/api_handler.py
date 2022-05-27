@@ -15,13 +15,19 @@
 
 #
 #
+#
+#
+#
+#
 import datetime
 import json
+import re
+import time
 
 import requests
 
 
-def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
+def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 20):
     fetched_posts = []
     current_max_timestamp = to_timestamp
     while current_max_timestamp >= from_timestamp:
@@ -35,7 +41,8 @@ def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
         response = requests.get(request_url)
         if not response.ok:
             if response.status_code == 429:
-                break
+                handle_rate_limit()
+                continue
             else:
                 raise ConnectionError(f"Bad response. Code: {response.status_code}")
         posts = json.loads(response.text)
@@ -48,3 +55,38 @@ def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
             break
         print(f'posts before: {datetime.datetime.fromtimestamp(current_max_timestamp)}')
     return fetched_posts
+
+
+def get_anime_name(post: dict) -> str:
+    link_id = post['id']
+    request_url = f'https://api.pushshift.io/reddit/comment/search/?link_id={link_id}&subreddit=animecalendar'
+    print(f'Sending request: {request_url}')
+    response = requests.get(request_url)
+    if not response.ok:
+        if response.status_code == 429:
+            handle_rate_limit()
+            return get_anime_name(post)
+        else:
+            raise ConnectionError(f"Bad response. Code: {response.status_code}")
+
+    if len(response.text) == 0:
+        print('Empty response text')
+        return ''
+    comments = json.loads(response.text)['data']
+    roboragi = [comment for comment in comments if comment['author'] == 'Roboragi']
+    if len(roboragi) == 0:
+        print('Roboragi nor found')
+        return ''
+    comment_body = roboragi[0]['body']
+    found = re.match(r'\*\*.*\*\*', comment_body)
+    if found is None:
+        print(f'Anime title not found in: {comment_body}')
+        return ''
+    name = comment_body[found.start():found.end()]
+    return name.strip('*')
+
+
+def handle_rate_limit():
+    print("Rate limit reached! Waiting 1 min...")
+    time.sleep(60)
+    print('Wakey, wakey!')
