@@ -19,6 +19,8 @@
 #
 #
 #
+#
+#
 import datetime
 import json
 import re
@@ -90,3 +92,15 @@ def handle_rate_limit():
     print("Rate limit reached! Waiting 1 min...")
     time.sleep(60)
     print('Wakey, wakey!')
+
+
+def is_post_valid(post_to_validate) -> bool:
+    url: str = post_to_validate['url']
+    extension = url[url.rfind(".")::]
+    allowed_extensions = ['.jpg', '.jpeg', '.png']
+
+    if 'v.redd.it' in url:
+        return False
+    if extension not in allowed_extensions:
+        return False
+    return True
