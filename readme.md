@@ -1,6 +1,6 @@
 # Anime365
 
-Simple quiz app based on posts from. /r/Anime365. For now, just collects images from there and stores them. Ideally,
+Simple quiz app based on posts from. /r/AnimeCalendar. For now, just collects images from there and stores them. Ideally,
 this will be a self-contained online app that handles the quiz with minimal manaagement.
 
 **Features, as of 2022-06-06 (only image collection update module for now):**
