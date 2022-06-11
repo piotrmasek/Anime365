@@ -12,11 +12,13 @@
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM,  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
+
 import sqlalchemy as db
 import sqlalchemy.orm
 
-from classes.image import Image
-from util import api_handler, image_file_handling
+from backend.classes.image import Image
+from backend.util import api_handler
+from backend.util import image_file_handling
 
 
 def save_post(post_to_save, db_session: db.orm.session):

@@ -23,8 +23,7 @@ import sqlalchemy as db
 import sqlalchemy.orm
 
 from classes.image import Image
-from util import api_handler
-from util import db_handler
+from util import api_handler, db_handler
 from util.api_handler import is_post_valid
 
 
