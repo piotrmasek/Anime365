@@ -22,9 +22,9 @@ import sys
 import sqlalchemy as db
 import sqlalchemy.orm
 
-from classes.image import Image
-from util import api_handler, db_handler
-from util.api_handler import is_post_valid
+from backend.classes.image import Image
+from backend.util import api_handler, db_handler
+from backend.util.api_handler import is_post_valid
 
 
 # import sqlalchemy.sql.functions as func
