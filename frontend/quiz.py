@@ -15,25 +15,39 @@
 
 #
 #
+import os
+import random
 import sys
 
 from PyQt6 import QtWidgets
 from PyQt6.QtGui import QPixmap
 
+
+def show_random_image(graphics_view: QtWidgets.QGraphicsView, images_dir: os.path):
+    img = random.choice(os.listdir(images_dir))
+    pix = QPixmap(os.path.join(images_dir, img))
+    item = QtWidgets.QGraphicsPixmapItem(pix)
+    scene = QtWidgets.QGraphicsScene(gfv)
+    scene.addItem(item)
+    graphics_view.setScene(scene)
+
+
+images_dir: os.path = '../backend/img/'
 app = QtWidgets.QApplication(sys.argv)
 window = QtWidgets.QWidget()
 
-window.setWindowTitle('2137')
+window.setWindowTitle('Anime365')
+
+layout = QtWidgets.QVBoxLayout(window)
 
 gfv = QtWidgets.QGraphicsView(window)
-pix = QPixmap('../backend/img/1639081631.png')
-item = QtWidgets.QGraphicsPixmapItem(pix)
-scene = QtWidgets.QGraphicsScene(window)
-scene.addItem(item)
-gfv.setScene(scene)
+show_random_image(gfv, images_dir)
+layout.addWidget(gfv)
 
 button = QtWidgets.QPushButton(window)
-button.setText('出ています')
-button.clicked.connect(window.close)
+button.setText('次')
+button.clicked.connect(lambda: show_random_image(gfv, images_dir))
+layout.addWidget(button)
+
 window.showMaximized()
 sys.exit(app.exec())
