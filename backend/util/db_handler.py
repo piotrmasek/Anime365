@@ -12,7 +12,6 @@
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM,  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
-
 import sqlalchemy as db
 import sqlalchemy.orm
 
@@ -25,12 +24,15 @@ def save_post(post_to_save, db_session: db.orm.session):
     url: str = post_to_save['url']
     timestamp: int = post_to_save['created_utc']
     extension = url[url.rfind(".")::]
-    name_with_extension = f'{str(timestamp) + extension}'
+    file_name_with_extension = f'{str(timestamp) + extension}'
     anime_title = api_handler.get_anime_name(post_to_save)
-    img = Image(file_name=name_with_extension, timestamp=timestamp, anime=anime_title)
+    if anime_title == '':
+        print(f"Skipping image: {file_name_with_extension}: no title found")
+        return
 
+    img = Image(file_name=file_name_with_extension, timestamp=timestamp, anime=anime_title)
     if not is_image_in_db(db_session, img):
-        image_file_handling.save_image(name_with_extension, url)
+        image_file_handling.save_image(file_name_with_extension, url)
         db_session.add(img)
     else:
         print(f"Skipping existing image: {img}")

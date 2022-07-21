@@ -15,10 +15,6 @@
 
 #
 #
-#
-#
-#
-#
 import os
 
 import requests

@@ -33,10 +33,15 @@
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="574121e3-b24b-45f2-be56-b043192e1caa" object-ref="schemas/main/tables/images" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="574121e3-b24b-45f2-be56-b043192e1caa" />
+  </component>
+  <component name="DBNavigator.Project.DatasetFilterManager">
+    <filter-actions connection-id="574121e3-b24b-45f2-be56-b043192e1caa" dataset="main.images" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -85,7 +90,7 @@
           <port value="" />
           <database value="" />
           <files>
-            <file path="C:\Users\piotr\PycharmProjects\Anime365\backend\anime365.sqlite" schema="main" />
+            <file path="C:\Users\piotr\PycharmProjects\Anime365\anime365.sqlite" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />

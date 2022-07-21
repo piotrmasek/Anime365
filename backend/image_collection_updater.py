@@ -32,14 +32,13 @@ from backend.util.api_handler import is_post_valid
 
 def update_image_collection(start_time, end_time):
     engine = db.create_engine('sqlite:///anime365.sqlite')
-    session_maker = db.orm.sessionmaker()
-    session_maker.configure(bind=engine)
+    session_maker = db.orm.sessionmaker(engine)
     Image.metadata.create_all(engine)
     db_session = session_maker()
 
-    # TODO limit post range
-    # min_timestamp = db_session.query(func.min(Image.timestamp)).scalar()
-    # max_timestamp = db_session.query(func.max(Image.timestamp)).scalar()
+    # TODO
+    # min_timestamp = db_session.query(func.min(Image.timestamp))
+    # max_timestamp = db_session.query(func.max(Image.timestamp))
 
     fetched_posts = api_handler.get_posts(int(start_time.timestamp()), int(end_time.timestamp()))
     for post in fetched_posts:
@@ -51,7 +50,7 @@ def update_image_collection(start_time, end_time):
 
 def main(argv):
     start_time = datetime.datetime(2021, 12, 31, 0, 0, 0, 0)
-    end_time = datetime.datetime(2021, 12, 14, 0, 0, 0, 0)
+    end_time = datetime.datetime(2021, 12, 1, 0, 0, 0, 0)
 
     help_string = "image_collection_updater.py -b <begin timestamp> -e <end timestamp>"
 
