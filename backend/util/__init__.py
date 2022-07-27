@@ -15,28 +15,7 @@
 
 #
 #
-import os
-
-import requests
-
-
-def save_image(name_with_extension: str, url: str):
-    image_store_dir = 'img/'
-    try:
-        os.mkdir(image_store_dir)
-    except FileExistsError:
-        pass
-    file_path = image_store_dir + name_with_extension
-    if os.path.exists(file_path):
-        print(f"File exists: {file_path}. Skipping.")
-        return
-
-    print(f'Downloading {name_with_extension}...')
-    img = requests.get(url)
-
-    try:
-        file = open(file_path, 'wb')  # other extensions
-    except OSError:
-        print(f"Can't create file: {file_path}. Skipping.")
-        return
-    file.write(img.content)
+#
+#
+#
+#

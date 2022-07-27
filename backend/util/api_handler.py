@@ -15,12 +15,6 @@
 
 #
 #
-#
-#
-#
-#
-#
-#
 import datetime
 import json
 import re
@@ -29,10 +23,11 @@ import time
 import requests
 
 
-def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 20):
+def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
     fetched_posts = []
     current_max_timestamp = to_timestamp
     while current_max_timestamp >= from_timestamp:
+        print(f'Looking for posts before: {datetime.datetime.fromtimestamp(current_max_timestamp)}')
         request_url = f'https://api.pushshift.io/reddit/search/submission/' \
                       f'?subreddit=animecalendar' \
                       f'&sort=desc' \
@@ -53,9 +48,6 @@ def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 20):
         fetched_posts += posts['data']
         print(f"Added {len(posts['data'])} Total {len(fetched_posts)}")
         current_max_timestamp = posts['data'][-1]['created_utc']
-        if current_max_timestamp < from_timestamp:
-            break
-        print(f'posts before: {datetime.datetime.fromtimestamp(current_max_timestamp)}')
     return fetched_posts
 
 
@@ -77,7 +69,7 @@ def get_anime_name(post: dict) -> str:
     comments = json.loads(response.text)['data']
     roboragi = [comment for comment in comments if comment['author'] == 'Roboragi']
     if len(roboragi) == 0:
-        print('Roboragi nor found')
+        print('Roboragi not found')
         return ''
     comment_body = roboragi[0]['body']
     found = re.match(r'\*\*.*\*\*', comment_body)
@@ -88,6 +80,7 @@ def get_anime_name(post: dict) -> str:
     return name.strip('*')
 
 
+# TODO handle this better: https://api.pushshift.io/meta ?
 def handle_rate_limit():
     print("Rate limit reached! Waiting 1 min...")
     time.sleep(60)
@@ -98,9 +91,15 @@ def is_post_valid(post_to_validate) -> bool:
     url: str = post_to_validate['url']
     extension = url[url.rfind(".")::]
     allowed_extensions = ['.jpg', '.jpeg', '.png']
+    allow_spoilers = False
+    allow_nsfw = False
 
     if 'v.redd.it' in url:
         return False
     if extension not in allowed_extensions:
+        return False
+    if not allow_spoilers and post_to_validate['spoiler']:
+        return False
+    if not allow_nsfw and post_to_validate['over_18']:
         return False
     return True
