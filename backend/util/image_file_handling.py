@@ -15,13 +15,15 @@
 
 #
 #
+#
+#
 import os
 
 import requests
 
 
 def save_image(name_with_extension: str, url: str):
-    image_store_dir = 'img/'
+    image_store_dir = 'data/img/'
     try:
         os.mkdir(image_store_dir)
     except FileExistsError:

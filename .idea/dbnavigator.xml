@@ -33,9 +33,7 @@
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="574121e3-b24b-45f2-be56-b043192e1caa" object-ref="schemas/main/tables/images" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="574121e3-b24b-45f2-be56-b043192e1caa" />
@@ -90,7 +88,7 @@
           <port value="" />
           <database value="" />
           <files>
-            <file path="C:\Users\piotr\PycharmProjects\Anime365\anime365.sqlite" schema="main" />
+            <file path="C:\Users\piotr\PycharmProjects\Anime365\data\anime365.sqlite" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />

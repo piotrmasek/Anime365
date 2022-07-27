@@ -15,6 +15,8 @@
 
 #
 #
+#
+#
 import os
 import random
 import sys
@@ -26,24 +28,38 @@ from PyQt6.QtGui import QPixmap
 
 from backend.classes.image import Image
 
+# TODO: just make it a class, divide into more methods, save shown_images, fit images to window
+images = []
+shown_images = []
+current_image_index = 0
+images_dir: os.path = 'data/img/'
+graphics_view: QtWidgets.QGraphicsView
 
-def show_random_image(graphics_view: QtWidgets.QGraphicsView, images_pool: list[Image]) -> Image:
-    images_dir: os.path = 'img/'
-    img = random.choice(images_pool)
+
+def show_random_image():
+    img = random.choice(images)
+
     pix = QPixmap(os.path.join(images_dir, img.file_name))
     item = QtWidgets.QGraphicsPixmapItem(pix)
-    scene = QtWidgets.QGraphicsScene(graphics_view)
-    scene.addItem(item)
-    graphics_view.setScene(scene)
-    return img
+
+    global graphics_view
+    graphics_view.scene().clear()
+    graphics_view.scene().addItem(item)
+
+    global current_image_index
+    global shown_images
+    current_image_index = len(shown_images)
+    shown_images.append(img)
+    images.remove(img)
 
 
-def run_quiz(argv):
-    engine = db.create_engine('sqlite:///anime365.sqlite')
+def run_quiz():
+    engine = db.create_engine('sqlite:///data/anime365.sqlite')
     session_maker = db.orm.sessionmaker(engine)
     Image.metadata.create_all(engine)
     db_session = session_maker()
 
+    global images
     images = db_session.query(Image).all()
 
     app = QtWidgets.QApplication(sys.argv)
@@ -51,26 +67,74 @@ def run_quiz(argv):
 
     window.setWindowTitle('Anime365')
 
-    layout = QtWidgets.QVBoxLayout(window)
+    vertical_layout = QtWidgets.QVBoxLayout(window)
 
-    gfv = QtWidgets.QGraphicsView(window)
-    show_random_image(gfv, images)
-    layout.addWidget(gfv)
+    global graphics_view
+    graphics_view = QtWidgets.QGraphicsView(window)
+    scene = QtWidgets.QGraphicsScene(graphics_view)
+    graphics_view.setScene(scene)
+    show_random_image()
+    vertical_layout.addWidget(graphics_view)
 
-    button = QtWidgets.QPushButton(window)
-    button.setText('次')
-    button.clicked.connect(lambda: on_click(button, gfv, images))
-    layout.addWidget(button)
+    buttons_layout = QtWidgets.QHBoxLayout(window)
+    vertical_layout.addLayout(buttons_layout)
+
+    button_previous = QtWidgets.QPushButton(window)
+    button_previous.setText('Previous')
+    button_previous.clicked.connect(lambda: on_click_previous())
+    buttons_layout.addWidget(button_previous)
+
+    button_answer = QtWidgets.QPushButton(window)
+    button_answer.setText('Answer')
+    button_answer.clicked.connect(lambda: on_click_answer(window))
+    buttons_layout.addWidget(button_answer)
+
+    button_next = QtWidgets.QPushButton(window)
+    button_next.setText('Next')
+    button_next.clicked.connect(lambda: on_click_next())
+    buttons_layout.addWidget(button_next)
 
     window.showMaximized()
 
     sys.exit(app.exec())
 
 
-def on_click(button, gfv, images):
-    i = show_random_image(gfv, images)
-    button.setText(i.anime)
+def on_click_next():
+    if current_image_index < (len(shown_images) - 1):
+        show_next_image()
+    else:
+        show_random_image()
+
+
+def on_click_answer(window):
+    QtWidgets.QMessageBox.information(window, 'Answer is', shown_images[current_image_index].anime)
+
+
+def on_click_previous():
+    global current_image_index
+    if current_image_index > 0:
+        show_previous_image()
+
+
+def show_previous_image():
+    global current_image_index
+    current_image_index -= 1
+    img = shown_images[current_image_index]
+    pix = QPixmap(os.path.join(images_dir, img.file_name))
+    item = QtWidgets.QGraphicsPixmapItem(pix)
+    graphics_view.scene().clear()
+    graphics_view.scene().addItem(item)
+
+
+def show_next_image():
+    global current_image_index
+    current_image_index += 1
+    img = shown_images[current_image_index]
+    pix = QPixmap(os.path.join(images_dir, img.file_name))
+    item = QtWidgets.QGraphicsPixmapItem(pix)
+    graphics_view.scene().clear()
+    graphics_view.scene().addItem(item)
 
 
 if __name__ == "__main__":
-    run_quiz(sys.argv[1:])
+    run_quiz()

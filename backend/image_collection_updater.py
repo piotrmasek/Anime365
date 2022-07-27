@@ -15,6 +15,8 @@
 
 #
 #
+#
+#
 import datetime
 import getopt
 import sys
@@ -31,7 +33,7 @@ from backend.util.api_handler import is_post_valid
 
 
 def update_image_collection(start_time, end_time):
-    engine = db.create_engine('sqlite:///anime365.sqlite')
+    engine = db.create_engine('sqlite:///data/anime365.sqlite')
     session_maker = db.orm.sessionmaker(engine)
     Image.metadata.create_all(engine)
     db_session = session_maker()
