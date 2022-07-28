@@ -138,7 +138,7 @@ def show_previous_image():
     global current_image_index
     current_image_index -= 1
     img = shown_images[current_image_index]
-    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp)))
+    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
     pix = QPixmap(os.path.join(images_dir, img.file_name))
     graphics_view.setPixmap(pix)
 
@@ -147,7 +147,7 @@ def show_next_image():
     global current_image_index
     current_image_index += 1
     img = shown_images[current_image_index]
-    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp)))
+    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
     pix = QPixmap(os.path.join(images_dir, img.file_name))
     graphics_view.setPixmap(pix)
 
