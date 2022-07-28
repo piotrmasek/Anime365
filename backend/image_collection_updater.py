@@ -15,8 +15,6 @@
 
 #
 #
-#
-#
 import datetime
 import getopt
 import sys
