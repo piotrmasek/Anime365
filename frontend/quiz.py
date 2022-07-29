@@ -15,142 +15,115 @@
 
 #
 #
-import os
 import random
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import sqlalchemy as db
 import sqlalchemy.orm
-from PyQt6 import QtCore
-from PyQt6 import QtGui
 from PyQt6 import QtWidgets
 from PyQt6.QtGui import QPixmap
 
 from backend.classes.image import Image
+from graphics_view import GraphicsView
 
 
-# TODO: just make it a class, divide into more methods, save shown_images
-class GraphicsView(QtWidgets.QGraphicsView):
-    def __init__(self, parent=None):
-        super(GraphicsView, self).__init__(parent)
-        scene = QtWidgets.QGraphicsScene(self)
-        self.setScene(scene)
-        self.m_pixmap_item = self.scene().addPixmap(QtGui.QPixmap())
+# TODO: save shown_images, maybe improve scaling
+class Quiz:
+    def __init__(self, data_dir: Path = Path('data')):
+        self._data_dir = data_dir
+        self._db_session = self._create_db_session()
 
-    def setPixmap(self, pixmap):
-        self.m_pixmap_item.setPixmap(pixmap)
-        self.fitInView(self.m_pixmap_item, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self.scene().setSceneRect(self.m_pixmap_item.boundingRect())
+        self._images: list[Image] = []
+        self._shown_images: list[Image] = []
+        self._current_image_index = 0
 
-    def resizeEvent(self, event):
-        if not self.m_pixmap_item.pixmap().isNull():
-            self.fitInView(self.m_pixmap_item, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        super(GraphicsView, self).resizeEvent(event)
+        self._app = QtWidgets.QApplication(sys.argv)
+        self._window = QtWidgets.QWidget()
+        self._graphics_view = GraphicsView(self._window)
 
+    def _create_db_session(self):
+        db_path = self._data_dir / 'anime365.sqlite'
+        engine = db.create_engine('sqlite:///' + str(db_path))
+        session_maker = db.orm.sessionmaker(engine)
+        Image.metadata.create_all(engine)
+        db_session = session_maker()
+        return db_session
 
-images = [Image]
-shown_images = [Image]
-current_image_index = 0
-images_dir: os.path = 'data/img/'
-graphics_view: GraphicsView
-window: QtWidgets.QWidget
+    def _start_gui(self):
+        vertical_layout = QtWidgets.QVBoxLayout(self._window)
+        self.show_random_image()
+        vertical_layout.addWidget(self._graphics_view)
 
+        buttons_layout = QtWidgets.QHBoxLayout(self._window)
+        vertical_layout.addLayout(buttons_layout)
 
-def show_random_image():
-    img = random.choice(images)
-    global window
-    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
-    pix = QPixmap(os.path.join(images_dir, img.file_name))
+        button_previous = QtWidgets.QPushButton(self._window)
+        button_previous.setText('Previous')
+        button_previous.clicked.connect(lambda: self._on_click_previous())
+        buttons_layout.addWidget(button_previous)
 
-    global graphics_view
-    graphics_view.setPixmap(pix)
-    global current_image_index
-    global shown_images
-    current_image_index = len(shown_images)
-    shown_images.append(img)
-    images.remove(img)
+        button_answer = QtWidgets.QPushButton(self._window)
+        button_answer.setText('Answer')
+        button_answer.clicked.connect(lambda: self._on_click_answer())
+        buttons_layout.addWidget(button_answer)
 
+        button_next = QtWidgets.QPushButton(self._window)
+        button_next.setText('Next')
+        button_next.clicked.connect(lambda: self._on_click_next())
+        buttons_layout.addWidget(button_next)
 
-def run_quiz():
-    engine = db.create_engine('sqlite:///data/anime365.sqlite')
-    session_maker = db.orm.sessionmaker(engine)
-    Image.metadata.create_all(engine)
-    db_session = session_maker()
+        self._window.setMinimumSize(1280, 720)
+        self._window.show()
 
-    global images
-    images = db_session.query(Image).all()
+    def _on_click_next(self):
+        if self._current_image_index < (len(self._shown_images) - 1):
+            self.show_next_image()
+        else:
+            self.show_random_image()
 
-    app = QtWidgets.QApplication(sys.argv)
-    global window
-    window = QtWidgets.QWidget()
+    def _on_click_answer(self):
+        QtWidgets.QMessageBox.information(self._window, 'The answer is', self._shown_images[self._current_image_index]
+                                          .anime)
 
-    window.setWindowTitle('Anime365')
+    def _on_click_previous(self):
+        if self._current_image_index > 0:
+            self.show_previous_image()
 
-    vertical_layout = QtWidgets.QVBoxLayout(window)
+    ###################################################################################################
+    # Interface
+    ###################################################################################################
+    def show_image(self, img: Image):
+        self._window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
 
-    global graphics_view
-    graphics_view = GraphicsView()
-    show_random_image()
-    vertical_layout.addWidget(graphics_view)
+        pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
+        self._graphics_view.setPixmap(pix)
+        self._current_image_index = len(self._shown_images)
 
-    buttons_layout = QtWidgets.QHBoxLayout(window)
-    vertical_layout.addLayout(buttons_layout)
+    def show_random_image(self):
+        img = random.choice(self._images)
+        self.show_image(img)
+        self._shown_images.append(img)
+        self._images.remove(img)
 
-    button_previous = QtWidgets.QPushButton(window)
-    button_previous.setText('Previous')
-    button_previous.clicked.connect(lambda: on_click_previous())
-    buttons_layout.addWidget(button_previous)
+    def show_previous_image(self):
+        if self._current_image_index < 1:
+            return
+        self._current_image_index -= 1
+        self.show_image(self._shown_images[self._current_image_index])
 
-    button_answer = QtWidgets.QPushButton(window)
-    button_answer.setText('Answer')
-    button_answer.clicked.connect(lambda: on_click_answer(window))
-    buttons_layout.addWidget(button_answer)
+    def show_next_image(self):
+        if self._current_image_index >= len(self._shown_images):
+            return
+        self._current_image_index += 1
+        self.show_image(self._shown_images[self._current_image_index])
 
-    button_next = QtWidgets.QPushButton(window)
-    button_next.setText('Next')
-    button_next.clicked.connect(lambda: on_click_next())
-    buttons_layout.addWidget(button_next)
-
-    window.showMaximized()
-
-    sys.exit(app.exec())
-
-
-def on_click_next():
-    if current_image_index < (len(shown_images) - 1):
-        show_next_image()
-    else:
-        show_random_image()
-
-
-def on_click_answer(window):
-    QtWidgets.QMessageBox.information(window, 'The answer is', shown_images[current_image_index].anime)
-
-
-def on_click_previous():
-    global current_image_index
-    if current_image_index > 0:
-        show_previous_image()
-
-
-def show_previous_image():
-    global current_image_index
-    current_image_index -= 1
-    img = shown_images[current_image_index]
-    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
-    pix = QPixmap(os.path.join(images_dir, img.file_name))
-    graphics_view.setPixmap(pix)
-
-
-def show_next_image():
-    global current_image_index
-    current_image_index += 1
-    img = shown_images[current_image_index]
-    window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
-    pix = QPixmap(os.path.join(images_dir, img.file_name))
-    graphics_view.setPixmap(pix)
+    def run(self):
+        self._images = self._db_session.query(Image).all()
+        self._start_gui()
+        sys.exit(self._app.exec())
 
 
 if __name__ == "__main__":
-    run_quiz()
+    Quiz().run()
