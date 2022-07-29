@@ -27,6 +27,7 @@ from PyQt6.QtGui import QPixmap
 
 from backend.classes.image import Image
 from graphics_view import GraphicsView
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 
 # TODO: save shown_images, maybe improve scaling
@@ -37,7 +38,7 @@ class Quiz:
 
         self._images: list[Image] = []
         self._shown_images: list[Image] = []
-        self._current_image_index = 0
+        self._current_image_index = -1
 
         self._app = QtWidgets.QApplication(sys.argv)
         self._window = QtWidgets.QWidget()
@@ -61,16 +62,19 @@ class Quiz:
 
         button_previous = QtWidgets.QPushButton(self._window)
         button_previous.setText('Previous')
+        button_previous.setShortcut(QtGui.QKeySequence.StandardKey.Back)
         button_previous.clicked.connect(lambda: self._on_click_previous())
         buttons_layout.addWidget(button_previous)
 
         button_answer = QtWidgets.QPushButton(self._window)
         button_answer.setText('Answer')
+        button_answer.setShortcut(QtGui.QKeySequence.StandardKey.Delete)
         button_answer.clicked.connect(lambda: self._on_click_answer())
         buttons_layout.addWidget(button_answer)
 
         button_next = QtWidgets.QPushButton(self._window)
         button_next.setText('Next')
+        button_next.setShortcut(QtGui.QKeySequence.StandardKey.Forward)
         button_next.clicked.connect(lambda: self._on_click_next())
         buttons_layout.addWidget(button_next)
 
@@ -99,10 +103,10 @@ class Quiz:
 
         pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
         self._graphics_view.setPixmap(pix)
-        self._current_image_index = len(self._shown_images)
 
     def show_random_image(self):
         img = random.choice(self._images)
+        self._current_image_index += 1
         self.show_image(img)
         self._shown_images.append(img)
         self._images.remove(img)
