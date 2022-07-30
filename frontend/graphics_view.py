@@ -15,28 +15,22 @@
 
 #
 #
-import os
-
-import requests
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 
-def save_image(name_with_extension: str, url: str):
-    image_store_dir = 'data/img/'
-    try:
-        os.mkdir(image_store_dir)
-    except FileExistsError:
-        pass
-    file_path = image_store_dir + name_with_extension
-    if os.path.exists(file_path):
-        print(f"File exists: {file_path}. Skipping.")
-        return
+class GraphicsView(QtWidgets.QGraphicsView):
+    def __init__(self, parent=None):
+        super(GraphicsView, self).__init__(parent)
+        scene = QtWidgets.QGraphicsScene(self)
+        self.setScene(scene)
+        self.m_pixmap_item = self.scene().addPixmap(QtGui.QPixmap())
 
-    print(f'Downloading {name_with_extension}...')
-    img = requests.get(url)
+    def setPixmap(self, pixmap):
+        self.m_pixmap_item.setPixmap(pixmap)
+        self.fitInView(self.m_pixmap_item, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        self.scene().setSceneRect(self.m_pixmap_item.boundingRect())
 
-    try:
-        file = open(file_path, 'wb')  # other extensions
-    except OSError:
-        print(f"Can't create file: {file_path}. Skipping.")
-        return
-    file.write(img.content)
+    def resizeEvent(self, event):
+        if not self.m_pixmap_item.pixmap().isNull():
+            self.fitInView(self.m_pixmap_item, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        super(GraphicsView, self).resizeEvent(event)
