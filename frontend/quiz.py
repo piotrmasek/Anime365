@@ -12,9 +12,7 @@
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM,  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
-
-#
-#
+import os
 import random
 import sys
 from datetime import datetime
@@ -22,15 +20,15 @@ from pathlib import Path
 
 import sqlalchemy as db
 import sqlalchemy.orm
-from PyQt6 import QtWidgets
+
+from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QPixmap
 
 from backend.classes.image import Image
 from graphics_view import GraphicsView
-from PyQt6 import QtWidgets, QtGui, QtCore
 
 
-# TODO: save shown_images, maybe improve scaling
+# TODO: persist shown_images, maybe improve scaling
 class Quiz:
     def __init__(self, data_dir: Path = Path('data')):
         self._data_dir = data_dir
@@ -99,9 +97,13 @@ class Quiz:
     # Interface
     ###################################################################################################
     def show_image(self, img: Image):
+        img_path = str(self._data_dir / 'img' / img.file_name)
+        if not os.path.exists(img_path):
+            print(f"File doesn't exists: {img_path}. Skipping.")
+            return
         self._window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
 
-        pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
+        pix = QPixmap(img_path)
         self._graphics_view.setPixmap(pix)
 
     def show_random_image(self):
