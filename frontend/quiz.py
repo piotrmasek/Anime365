@@ -12,6 +12,9 @@
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM,  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
+
+#
+#
 import os
 import random
 import sys
@@ -20,8 +23,7 @@ from pathlib import Path
 
 import sqlalchemy as db
 import sqlalchemy.orm
-
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QPixmap, QFont, QColor
 
 from backend.classes.image import Image
