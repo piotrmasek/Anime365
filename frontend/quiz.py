@@ -21,14 +21,14 @@ from pathlib import Path
 import sqlalchemy as db
 import sqlalchemy.orm
 
-from PyQt6 import QtWidgets, QtGui
-from PyQt6.QtGui import QPixmap
+from PyQt6 import QtWidgets
+from PyQt6.QtGui import QPixmap, QFont, QColor
 
 from backend.classes.image import Image
 from graphics_view import GraphicsView
 
 
-# TODO: persist shown_images, maybe improve scaling
+# TODO: save shown_images, maybe improve scaling
 class Quiz:
     def __init__(self, data_dir: Path = Path('data')):
         self._data_dir = data_dir
@@ -37,7 +37,6 @@ class Quiz:
         self._images: list[Image] = []
         self._shown_images: list[Image] = []
         self._current_image_index = -1
-
         self._app = QtWidgets.QApplication(sys.argv)
         self._window = QtWidgets.QWidget()
         self._graphics_view = GraphicsView(self._window)
@@ -103,8 +102,9 @@ class Quiz:
             return
         self._window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
 
-        pix = QPixmap(img_path)
+        pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
         self._graphics_view.setPixmap(pix)
+        self.start_timer(30)
 
     def show_random_image(self):
         img = random.choice(self._images)
@@ -124,6 +124,12 @@ class Quiz:
             return
         self._current_image_index += 1
         self.show_image(self._shown_images[self._current_image_index])
+
+    def start_timer(self, seconds):
+        scene = self._graphics_view.scene()
+        font = QFont()
+        font.setPointSize(48)
+        scene.addText(f"{seconds}", font).setDefaultTextColor(QColor('yellow'))
 
     def run(self):
         self._images = self._db_session.query(Image).all()
