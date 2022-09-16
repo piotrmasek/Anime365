@@ -23,6 +23,8 @@
 #
 #
 #
+#
+#
 import os
 import random
 import sys
@@ -156,6 +158,7 @@ class Quiz:
         self._timer_text.setDefaultTextColor(QColor('yellow'))
 
     def start_timer(self):
+        self._timeout_seconds = DEFAULT_TIMEOUT
         self._update_timer_text()
 
         self._timer = QTimer()
