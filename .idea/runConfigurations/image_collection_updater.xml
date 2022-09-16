@@ -12,7 +12,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/image_collection_updater.py" />
-    <option name="PARAMETERS" value="-b &quot;2022-07-22&quot; -e &quot;2021-01-01&quot;" />
+    <option name="PARAMETERS" value="-b &quot;2022-09-15&quot; -e &quot;2021-09-15&quot;" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

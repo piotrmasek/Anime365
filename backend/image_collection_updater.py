@@ -15,6 +15,14 @@
 
 #
 #
+#
+#
+#
+#
+#
+#
+#
+#
 import datetime
 import getopt
 import sys
@@ -28,8 +36,6 @@ from backend.util.api_handler import is_post_valid
 
 
 # import sqlalchemy.sql.functions as func
-
-
 def update_image_collection(start_time, end_time):
     engine = db.create_engine('sqlite:///data/anime365.sqlite')
     session_maker = db.orm.sessionmaker(engine)

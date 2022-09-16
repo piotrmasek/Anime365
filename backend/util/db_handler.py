@@ -30,12 +30,16 @@ def save_post(post_to_save, db_session: db.orm.session):
         print(f"Skipping image: {file_name_with_extension}: no title found")
         return
 
-    img = Image(file_name=file_name_with_extension, timestamp=timestamp, anime=anime_title)
-    if not is_image_in_db(db_session, img):
+    image = Image(file_name=file_name_with_extension, timestamp=timestamp, anime=anime_title)
+    if db_session.query(Image).filter(Image.anime == image.anime).count() > 0:
+        print(f"Skipping image: {file_name_with_extension}: anime already in db")
+        return
+
+    if not is_image_in_db(db_session, image):
         image_file_handling.save_image(file_name_with_extension, url)
-        db_session.add(img)
+        db_session.add(image)
     else:
-        print(f"Skipping existing image: {img}")
+        print(f"Skipping existing image: {image}")
 
 
 def is_image_in_db(db_session: db.orm.session, image: Image):

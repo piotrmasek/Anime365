@@ -15,6 +15,14 @@
 
 #
 #
+#
+#
+#
+#
+#
+#
+#
+#
 import os
 import random
 import sys
@@ -24,13 +32,16 @@ from pathlib import Path
 import sqlalchemy as db
 import sqlalchemy.orm
 from PyQt6 import QtWidgets, QtGui
+from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QPixmap, QFont, QColor
 
 from backend.classes.image import Image
 from graphics_view import GraphicsView
 
-
+DEFAULT_TIMEOUT = 30
 # TODO: save shown_images, maybe improve scaling
+
+
 class Quiz:
     def __init__(self, data_dir: Path = Path('data')):
         self._data_dir = data_dir
@@ -42,6 +53,10 @@ class Quiz:
         self._app = QtWidgets.QApplication(sys.argv)
         self._window = QtWidgets.QWidget()
         self._graphics_view = GraphicsView(self._window)
+
+        self._timer = QTimer()
+        self._timeout_seconds = DEFAULT_TIMEOUT
+        self._timer_text = None
 
     def _create_db_session(self):
         db_path = self._data_dir / 'anime365.sqlite'
@@ -77,7 +92,7 @@ class Quiz:
         button_next.clicked.connect(lambda: self._on_click_next())
         buttons_layout.addWidget(button_next)
 
-        self._window.setMinimumSize(1280, 720)
+        self._window.setMinimumSize(800, 600)
         self._window.show()
 
     def _on_click_next(self):
@@ -106,7 +121,7 @@ class Quiz:
 
         pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
         self._graphics_view.setPixmap(pix)
-        self.start_timer(30)
+        self.start_timer()
 
     def show_random_image(self):
         img = random.choice(self._images)
@@ -127,11 +142,26 @@ class Quiz:
         self._current_image_index += 1
         self.show_image(self._shown_images[self._current_image_index])
 
-    def start_timer(self, seconds):
+    def on_timeout(self):
+        if self._timeout_seconds > 0:
+            self._timeout_seconds -= 1
+            self._update_timer_text()
+
+    def _update_timer_text(self):
         scene = self._graphics_view.scene()
         font = QFont()
         font.setPointSize(48)
-        scene.addText(f"{seconds}", font).setDefaultTextColor(QColor('yellow'))
+        scene.removeItem(self._timer_text)
+        self._timer_text = scene.addText(f"{self._timeout_seconds}", font)
+        self._timer_text.setDefaultTextColor(QColor('yellow'))
+
+    def start_timer(self):
+        self._update_timer_text()
+
+        self._timer = QTimer()
+        # noinspection PyUnresolvedReferences
+        self._timer.timeout.connect(self.on_timeout)
+        self._timer.start(1000)
 
     def run(self):
         self._images = self._db_session.query(Image).all()
