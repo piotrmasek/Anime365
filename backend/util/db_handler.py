@@ -20,6 +20,14 @@ from backend.util import api_handler
 from backend.util import image_file_handling
 
 
+def create_db_session():
+    engine = db.create_engine('sqlite:///data/anime365.sqlite', echo=True)
+    session_maker = db.orm.sessionmaker(engine)
+    Image.metadata.create_all(engine)
+    db_session = session_maker()
+    return db_session
+
+
 def save_post(post_to_save, db_session: db.orm.session):
     url: str = post_to_save['url']
     timestamp: int = post_to_save['created_utc']
@@ -44,3 +52,4 @@ def save_post(post_to_save, db_session: db.orm.session):
 
 def is_image_in_db(db_session: db.orm.session, image: Image):
     return db_session.query(Image).filter(Image.timestamp == image.timestamp).count() > 0
+

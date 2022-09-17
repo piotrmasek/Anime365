@@ -82,8 +82,9 @@ def get_anime_name(post: dict) -> str:
 
 # TODO handle this better: https://api.pushshift.io/meta ?
 def handle_rate_limit():
-    print("Rate limit reached! Waiting 1 min...")
-    time.sleep(60)
+    wait_time_seconds = 30
+    print(f"Rate limit reached! Waiting {wait_time_seconds}...")
+    time.sleep(wait_time_seconds)
     print('Wakey, wakey!')
 
 

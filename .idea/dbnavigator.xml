@@ -29,17 +29,23 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="574121e3-b24b-45f2-be56-b043192e1caa">
-      <console name="Db" type="STANDARD" schema="main" session="Main" />
+      <console name="Db" type="STANDARD" schema="main" session="Main"><![CDATA[unlock tables]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="574121e3-b24b-45f2-be56-b043192e1caa" object-ref="schemas/main/tables/images" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="574121e3-b24b-45f2-be56-b043192e1caa" />
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-actions connection-id="574121e3-b24b-45f2-be56-b043192e1caa" dataset="main.images" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="574121e3-b24b-45f2-be56-b043192e1caa" dataset="main.images" active-filter-id="EMPTY_FILTER">
+      <filter id="186391cf-5629-4e5e-a47c-805473129804" name="%Hayate no Gotoku!%" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="anime" operator="like" value="%Hayate no Gotoku!%" active="true" />
+      </filter>
+    </filter-actions>
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -95,7 +101,7 @@
           <deprecated-pwd value="" />
         </database>
         <properties>
-          <auto-commit value="false" />
+          <auto-commit value="true" />
         </properties>
         <ssh-settings>
           <active value="false" />

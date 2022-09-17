@@ -15,20 +15,9 @@
 
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
 import datetime
 import getopt
 import sys
-
-import sqlalchemy as db
-import sqlalchemy.orm
 
 from backend.classes.image import Image
 from backend.util import api_handler, db_handler
@@ -37,10 +26,7 @@ from backend.util.api_handler import is_post_valid
 
 # import sqlalchemy.sql.functions as func
 def update_image_collection(start_time, end_time):
-    engine = db.create_engine('sqlite:///data/anime365.sqlite')
-    session_maker = db.orm.sessionmaker(engine)
-    Image.metadata.create_all(engine)
-    db_session = session_maker()
+    db_session = db_handler.create_db_session()
 
     # TODO
     # min_timestamp = db_session.query(func.min(Image.timestamp))
@@ -51,6 +37,15 @@ def update_image_collection(start_time, end_time):
         if not is_post_valid(post):
             continue
         db_handler.save_post(post, db_session)
+    db_session.commit()
+
+
+def reset_used():
+    db_session = db_handler.create_db_session()
+    images = db_session.query(Image).filter(Image.used is True).all()
+    for image in images:
+        image.used = False
+
     db_session.commit()
 
 

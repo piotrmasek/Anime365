@@ -15,16 +15,6 @@
 
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
 import os
 import random
 import sys
@@ -33,14 +23,16 @@ from pathlib import Path
 
 import sqlalchemy as db
 import sqlalchemy.orm
-from PyQt6 import QtWidgets, QtGui
-from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QPixmap, QFont, QColor
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtGui import QPixmap, QFont, QColor, QShortcut, QKeySequence
 
 from backend.classes.image import Image
 from graphics_view import GraphicsView
 
 DEFAULT_TIMEOUT = 30
+
+
 # TODO: save shown_images, maybe improve scaling
 
 
@@ -62,7 +54,7 @@ class Quiz:
 
     def _create_db_session(self):
         db_path = self._data_dir / 'anime365.sqlite'
-        engine = db.create_engine('sqlite:///' + str(db_path))
+        engine = db.create_engine('sqlite:///' + str(db_path), echo=True)
         session_maker = db.orm.sessionmaker(engine)
         Image.metadata.create_all(engine)
         db_session = session_maker()
@@ -78,21 +70,25 @@ class Quiz:
 
         button_previous = QtWidgets.QPushButton(self._window)
         button_previous.setText('Previous')
-        button_previous.setShortcut(QtGui.QKeySequence.StandardKey.Back)
+        button_previous.setShortcut(Qt.Key.Key_Left)
         button_previous.clicked.connect(lambda: self._on_click_previous())
         buttons_layout.addWidget(button_previous)
 
         button_answer = QtWidgets.QPushButton(self._window)
         button_answer.setText('Answer')
-        button_answer.setShortcut(QtGui.QKeySequence.StandardKey.Delete)
+        button_answer.setShortcut(Qt.Key.Key_Return)
         button_answer.clicked.connect(lambda: self._on_click_answer())
         buttons_layout.addWidget(button_answer)
 
         button_next = QtWidgets.QPushButton(self._window)
         button_next.setText('Next')
-        button_next.setShortcut(QtGui.QKeySequence.StandardKey.Forward)
+        button_next.setShortcut(Qt.Key.Key_Right)
         button_next.clicked.connect(lambda: self._on_click_next())
         buttons_layout.addWidget(button_next)
+
+        delete_shortcut = QShortcut(QKeySequence.StandardKey.Delete, self._window)
+        # noinspection PyUnresolvedReferences
+        delete_shortcut.activated.connect(self.delete_current_image)
 
         self._window.setMinimumSize(800, 600)
         self._window.show()
@@ -119,7 +115,10 @@ class Quiz:
         if not os.path.exists(img_path):
             print(f"File doesn't exists: {img_path}. Skipping.")
             return
-        self._window.setWindowTitle(str(datetime.fromtimestamp(img.timestamp).date()))
+
+        date = datetime.fromtimestamp(img.timestamp).date()
+        self._window.setWindowTitle(str(date)
+                                    + f' | Image #{str(len(self._shown_images))}, {str(len(self._images))} left)')
 
         pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
         self._graphics_view.setPixmap(pix)
@@ -129,8 +128,12 @@ class Quiz:
         img = random.choice(self._images)
         self._current_image_index += 1
         self.show_image(img)
+
         self._shown_images.append(img)
         self._images.remove(img)
+
+        img.used = True
+        self._db_session.commit()
 
     def show_previous_image(self):
         if self._current_image_index < 1:
@@ -143,6 +146,10 @@ class Quiz:
             return
         self._current_image_index += 1
         self.show_image(self._shown_images[self._current_image_index])
+
+    def delete_current_image(self):
+        self._db_session.delete(self._shown_images[self._current_image_index])
+        self._db_session.commit()
 
     def on_timeout(self):
         if self._timeout_seconds > 0:
@@ -167,7 +174,9 @@ class Quiz:
         self._timer.start(1000)
 
     def run(self):
-        self._images = self._db_session.query(Image).all()
+        self._images = self._db_session.query(Image).filter_by(used=False).all()
+        if len(self._images) == 0:
+            raise Exception('No valid images loaded. Maybe all are used up?')
         self._start_gui()
         sys.exit(self._app.exec())
 
