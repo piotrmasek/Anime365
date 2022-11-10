@@ -19,12 +19,10 @@ import datetime
 import getopt
 import sys
 
-from backend.classes.image import Image
 from backend.util import api_handler, db_handler
 from backend.util.api_handler import is_post_valid
 
 
-# import sqlalchemy.sql.functions as func
 def update_image_collection(start_time, end_time):
     db_session = db_handler.create_db_session()
 
@@ -33,19 +31,13 @@ def update_image_collection(start_time, end_time):
     # max_timestamp = db_session.query(func.max(Image.timestamp))
 
     fetched_posts = api_handler.get_posts(int(start_time.timestamp()), int(end_time.timestamp()))
-    for post in fetched_posts:
-        if not is_post_valid(post):
-            continue
-        db_handler.save_post(post, db_session)
-    db_session.commit()
-
-
-def reset_used():
-    db_session = db_handler.create_db_session()
-    images = db_session.query(Image).filter(Image.used is True).all()
-    for image in images:
-        image.used = False
-
+    try:
+        for post in fetched_posts:
+            if not is_post_valid(post):
+                continue
+            db_handler.save_post(post, db_session)
+    except KeyboardInterrupt:
+        pass
     db_session.commit()
 
 

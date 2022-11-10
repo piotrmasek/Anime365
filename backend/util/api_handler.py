@@ -15,10 +15,10 @@
 
 #
 #
-import datetime
 import json
 import re
 import time
+from datetime import datetime
 
 import requests
 
@@ -27,7 +27,7 @@ def get_posts(to_timestamp: int, from_timestamp: int, step_size: int = 100):
     fetched_posts = []
     current_max_timestamp = to_timestamp
     while current_max_timestamp >= from_timestamp:
-        print(f'Looking for posts before: {datetime.datetime.fromtimestamp(current_max_timestamp)}')
+        print(f'Looking for posts before: {datetime.fromtimestamp(current_max_timestamp)}')
         request_url = f'https://api.pushshift.io/reddit/search/submission/' \
                       f'?subreddit=animecalendar' \
                       f'&sort=desc' \
@@ -82,7 +82,7 @@ def get_anime_name(post: dict) -> str:
 
 # TODO handle this better: https://api.pushshift.io/meta ?
 def handle_rate_limit():
-    wait_time_seconds = 30
+    wait_time_seconds = 5
     print(f"Rate limit reached! Waiting {wait_time_seconds}...")
     time.sleep(wait_time_seconds)
     print('Wakey, wakey!')

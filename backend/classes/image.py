@@ -29,5 +29,4 @@ class Image(declarative_base()):
     # difficulty = Column(Integer) #TODO maybe sometime
 
     def __str__(self) -> str:
-        return f"id: {self.id}, file: {self.file_name}, date: {self.timestamp}, anime: {self.anime}," \
-               f" diff: {self.difficulty}"
+        return f"id: {self.id}, file: {self.file_name}, date: {self.timestamp}, anime: {self.anime}"
