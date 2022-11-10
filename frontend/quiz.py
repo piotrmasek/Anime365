@@ -12,9 +12,6 @@
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM,  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
-
-#
-#
 import os
 import random
 import sys
@@ -31,9 +28,6 @@ from backend.classes.image import Image
 from graphics_view import GraphicsView
 
 DEFAULT_TIMEOUT = 30
-
-
-# TODO: save shown_images, maybe improve scaling
 
 
 class Quiz:
@@ -117,7 +111,7 @@ class Quiz:
             return
 
         date = datetime.fromtimestamp(img.timestamp).date()
-        self._window.setWindowTitle(str(date)
+        self._window.setWindowTitle(f'{date.day}/{date.month}'
                                     + f' | Image #{str(len(self._shown_images))}, {str(len(self._images))} left)')
 
         pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
