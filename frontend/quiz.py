@@ -1,4 +1,4 @@
-#  Copyright (c) 2022 Piotr Masek
+#  Copyright (c) 2023 Piotr Masek
 #  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 #  documentation files (the “Software”), to deal in the Software without restriction, including without limitation
 #  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -12,6 +12,9 @@
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM,  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
+
+#
+#
 import os
 import random
 import sys
@@ -19,7 +22,7 @@ from datetime import datetime
 from pathlib import Path
 
 import sqlalchemy as db
-import sqlalchemy.orm
+import sqlalchemy.orm as orm
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QFont, QColor, QShortcut, QKeySequence
@@ -28,12 +31,23 @@ from backend.classes.image import Image
 from graphics_view import GraphicsView
 
 DEFAULT_TIMEOUT = 30
+DATA_DIR = Path('data')
+
+
+# TODO: create an independent class
+def _create_db_session() -> orm.Session:
+    db_path = DATA_DIR / 'anime365.sqlite'
+    engine = db.create_engine('sqlite:///' + str(db_path), echo=True)
+    session_maker = db.orm.sessionmaker(engine)
+    Image.metadata.create_all(engine)
+    db_session = session_maker()
+    return db_session
 
 
 class Quiz:
-    def __init__(self, data_dir: Path = Path('data')):
+    def __init__(self, data_source: orm.Session, data_dir: Path):
+        self._db_session = data_source
         self._data_dir = data_dir
-        self._db_session = self._create_db_session()
 
         self._images: list[Image] = []
         self._shown_images: list[Image] = []
@@ -45,14 +59,6 @@ class Quiz:
         self._timer = QTimer()
         self._timeout_seconds = DEFAULT_TIMEOUT
         self._timer_text = None
-
-    def _create_db_session(self):
-        db_path = self._data_dir / 'anime365.sqlite'
-        engine = db.create_engine('sqlite:///' + str(db_path), echo=True)
-        session_maker = db.orm.sessionmaker(engine)
-        Image.metadata.create_all(engine)
-        db_session = session_maker()
-        return db_session
 
     def _start_gui(self):
         vertical_layout = QtWidgets.QVBoxLayout(self._window)
@@ -111,8 +117,8 @@ class Quiz:
             return
 
         date = datetime.fromtimestamp(img.timestamp).date()
-        self._window.setWindowTitle(f'{date.day}/{date.month}'
-                                    + f' | Image #{str(len(self._shown_images))}, {str(len(self._images))} left)')
+        self._window.setWindowTitle(f'Date: {date.day}/{date.month}'
+                                    + f' | Question #{str(len(self._shown_images))} | {str(len(self._images))} left')
 
         pix = QPixmap(str(self._data_dir / 'img' / img.file_name))
         self._graphics_view.setPixmap(pix)
@@ -176,4 +182,5 @@ class Quiz:
 
 
 if __name__ == "__main__":
-    Quiz().run()
+    with _create_db_session() as session:
+        Quiz(data_source=session, data_dir=DATA_DIR).run()
